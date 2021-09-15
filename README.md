@@ -1,2 +1,2 @@
 # tf-templates
-Misc Terraform templates
+misc terraform templates
