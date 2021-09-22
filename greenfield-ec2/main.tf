@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
 resource "aws_vpc" "myvpc" {
@@ -79,10 +79,10 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "myinstance" {
   ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t2.micro"
+  instance_type          = var.instancetype
   subnet_id              = aws_subnet.mysubnet.id
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
-  key_name               = "mykey"
+  key_name               = var.keyname
   tags = {
     Name = "example instance"
   }
