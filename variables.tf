@@ -10,6 +10,7 @@ variable "instancetype" {
 
 variable "keyname" {
   type = string
-  description = "prompt for keyname"
+  description = "ec2 key"
+  default = "roobee"
 }
 
