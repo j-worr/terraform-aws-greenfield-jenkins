@@ -13,4 +13,3 @@ variable "keyname" {
   description = "ec2 key"
   default = "roobee"
 }
-

@@ -1,11 +1,12 @@
 terraform {
   backend "s3" {
-    bucket         = "jw-tfbucket"
+    bucket         =  "jw-tfbucket"
     key            = "terraform-aws-greenfield-ec2/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "terraform-lock"
   }
+  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -14,14 +15,25 @@ terraform {
   }
 }
 
+locals {
+  common_tags = {
+    Env = "greenfield-ec2 deployment via terraform"
+  }
+}
+
 provider "aws" {
   region = var.region
+  default_tags {
+    tags = {
+      Env = "test - deployed with terraform"
+    }
+  }
 }
 
 resource "aws_vpc" "myvpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
-    Name = "myvpc"
+    Name = "my-vpc"
   }
 }
 
@@ -29,11 +41,17 @@ resource "aws_subnet" "mysubnet" {
   vpc_id                  = aws_vpc.myvpc.id
   cidr_block              = "10.0.0.0/24"
   map_public_ip_on_launch = true
+  tags = {
+    Name = "my-subnet"
+  }
 }
 
 
 resource "aws_internet_gateway" "mygateway" {
   vpc_id = aws_vpc.myvpc.id
+  tags = {
+    Name = "my-igw"
+  }
 }
 
 resource "aws_route" "route" {
@@ -46,7 +64,10 @@ resource "aws_route" "route" {
 resource "aws_security_group" "allow_ssh" {
   name   = "allow_ssh"
   vpc_id = aws_vpc.myvpc.id
-
+  tags = {
+    Name = "my-sg"
+  }
+  
   ingress {
     description      = "ssh"
     from_port        = 22
@@ -63,7 +84,6 @@ resource "aws_security_group" "allow_ssh" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-
 }
 
 
@@ -91,6 +111,6 @@ resource "aws_instance" "myinstance" {
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
   key_name               = var.keyname
   tags = {
-    Name = "example instance"
+    Name = "my-instance"
   }
 }
