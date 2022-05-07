@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket         =  "jw-tfbucket"
-    key            = "terraform-aws-greenfield-ec2/terraform.tfstate"
+    key            = "terraform-aws-greenfield-jenkins/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "terraform-lock"
@@ -17,7 +17,7 @@ terraform {
 
 locals {
   common_tags = {
-    Env = "greenfield-ec2 deployment via terraform"
+    Env = "greenfield-jenkins-ec2 deployment via terraform"
   }
 }
 
@@ -76,6 +76,15 @@ resource "aws_security_group" "allow_ssh" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+  
+  ingress {
+    description      = "web8080"
+    from_port        = 8080
+    to_port          = 8080
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
 
   egress {
     from_port        = 0
@@ -109,6 +118,10 @@ resource "aws_instance" "myinstance" {
   instance_type          = var.instancetype
   subnet_id              = aws_subnet.mysubnet.id
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  user_data = "${file("install_jenkins.sh")}"
+
+
+
   key_name               = var.keyname
   tags = {
     Name = "my-instance"
